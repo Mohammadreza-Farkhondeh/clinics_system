@@ -6,11 +6,8 @@
   <h2>Welcome, Dr. {{ user.username }}!</h2>
   <p>Doctor Dashboard</p>
 
-  <!-- Display the doctor's schedule and manage appointments -->
   {% for appointment in appointments %}
     <p>{{ appointment.date_time }} - {{ appointment.status }}</p>
-    <!-- Add more appointment details as needed -->
   {% endfor %}
 
-  <!-- Add your doctor-specific content and options here -->
 {% endblock %}
