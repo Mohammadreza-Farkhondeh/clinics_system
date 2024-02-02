@@ -1,6 +1,6 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.contrib.admin import site
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class District(models.Model):
@@ -8,7 +8,9 @@ class District(models.Model):
 
 
 class User(AbstractUser):
-    user_type = models.CharField(max_length=50)
+    is_patient = models.BooleanField(default=True)
+    is_doctor = models.BooleanField(default=False)
+    is_clinic_manager = models.BooleanField(default=False)
     district = models.ForeignKey(District, on_delete=models.deletion.SET_NULL, null=True, blank=True)
 
 
@@ -16,34 +18,29 @@ class Clinic(models.Model):
     name = models.CharField(max_length=255)
     address = models.TextField()
     district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, blank=True)
-    contact_info = models.CharField(max_length=255)
-    services_offered = models.TextField()
-    availability = models.BooleanField(default=True)
-    capacity = models.IntegerField()
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
 
 class Room(models.Model):
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
-    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
+    doctor = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        if self.doctor:
+            return f"room_{self.id}_{self.clinic.name}_{self.doctor.username}"
+        else:
+            return f"room_{self.id}_{self.clinic.name}"
 
 
 class Appointment(models.Model):
+    reserved = models.BooleanField(default=False)
     room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, blank=True)
-    clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    date_time = models.IntegerField()
-    status = models.CharField(max_length=50)
-
-
-class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    message = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    date_time = models.DateTimeField()
 
 
 site.register(District)
 site.register(User)
 site.register(Clinic)
 site.register(Room)
-site.register(Notification)
 site.register(Appointment)
